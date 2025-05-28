@@ -68,7 +68,7 @@ Tệp `static/index.html` cung cấp một form upload đơn giản để gửi 
 
 ---
 
-## 🐳 Dockerfile (mô tả ngắn)
+## 🐳 Dockerfile
 
 - Tạo image Python.
 - Cài các thư viện từ `requirements.txt`.
@@ -94,7 +94,7 @@ ultralytics
 
 ---
 
-## 📸 Demo (tuỳ chọn)
+## 📸 Demo
 ![image](https://github.com/user-attachments/assets/d18ebb4e-703d-46cd-99ae-c3e1305b1539)
 
 
