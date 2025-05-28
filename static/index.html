@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YOLO Object Detection</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Phông chữ hiện đại hơn */
+            background-color: #f0f8ff; /* Màu nền nhẹ nhàng */
+            margin: 0;
+            padding: 30px; /* Tăng khoảng cách lề */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Căn giữa nội dung theo chiều dọc */
+            min-height: 100vh; /* Đảm bảo chiều cao tối thiểu bằng chiều cao viewport */
+            box-sizing: border-box; /* Để padding không làm tăng kích thước phần tử */
+        }
+
+        h2 {
+            color: #337ab7; /* Màu tiêu đề nổi bật */
+            text-align: center;
+            margin-bottom: 30px; /* Tăng khoảng cách dưới tiêu đề */
+        }
+
+        .controls {
+            background-color: #fff; /* Nền trắng cho khu vực điều khiển */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Hiệu ứng đổ bóng nhẹ */
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #5cb85c; /* Màu xanh lá cây tươi sáng */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease; /* Hiệu ứng chuyển màu khi hover */
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        #container {
+            display: flex;
+            justify-content: center;
+            gap: 30px; /* Giảm khoảng cách một chút */
+            margin-top: 20px;
+            width: 90%; /* Giới hạn chiều rộng container */
+            max-width: 1200px; /* Chiều rộng tối đa */
+        }
+
+        .image-box {
+            text-align: center;
+            background-color: #fff; /* Nền trắng cho khung ảnh */
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-box h3 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .image-box img {
+            width: 100%; /* Ảnh chiếm toàn bộ chiều rộng của khung */
+            max-width: 550px; /* Tăng kích thước tối đa một chút */
+            border: 1px solid #ddd; /* Viền mỏng hơn */
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Hiệu ứng đổ bóng tinh tế hơn */
+            display: block; /* Loại bỏ khoảng trắng thừa dưới ảnh */
+            margin: 0 auto; /* Căn giữa ảnh trong khung */
+        }
+
+        #object-count {
+            background-color: #f9f9f9; /* Nền nhạt cho kết quả */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            text-align: center;
+            font-size: 18px;
+            width: 80%;
+            max-width: 800px;
+        }
+
+        #object-count h3 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        #object-count ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #object-count li {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        #object-count li strong {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>YOLO Object Detection</h2>
+
+    <div class="controls">
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="uploadImage()">Detect</button>
+    </div>
+
+    <div id="container">
+        <div class="image-box">
+            <h3>Ảnh gốc</h3>
+            <img id="original" src="#" style="display: none;" />
+        </div>
+        <div class="image-box">
+            <h3>Ảnh sau khi nhận diện</h3>
+            <img id="result" src="#" style="display: none;" />
+        </div>
+    </div>
+
+    <div id="object-count"></div>
+
+    <script>
+        async function uploadImage() {
+            const input = document.getElementById('fileInput');
+            const file = input.files[0];
+            if (!file) {
+                alert("Vui lòng chọn một ảnh trước.");
+                return;
+            }
+
+            // Hiển thị ảnh gốc
+            const originalImg = document.getElementById('original');
+            originalImg.src = URL.createObjectURL(file);
+            originalImg.style.display = "block";
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch("/detect-image/", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error("Không thể nhận diện ảnh.");
+                }
+
+                const data = await response.json();
+
+                // Hiển thị ảnh kết quả
+                const resultImg = document.getElementById('result');
+                resultImg.src = "data:image/jpeg;base64," + data.image_base64;
+                resultImg.style.display = "block";
+
+                // Hiển thị danh sách vật thể
+                const counts = data.counts;
+                let html = "<h3>Kết quả phát hiện:</h3><ul>";
+                for (const [label, count] of Object.entries(counts)) {
+                    html += `<li><strong>${label}</strong>: ${count}</li>`;
+                }
+                html += "</ul>";
+                document.getElementById("object-count").innerHTML = html;
+
+            } catch (error) {
+                alert("Lỗi: " + error.message);
+            }
+        }
+    </script>
+
+</body>
+</html>
