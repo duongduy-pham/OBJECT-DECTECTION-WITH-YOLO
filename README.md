@@ -22,6 +22,7 @@ Một ứng dụng web nhận diện vật thể trong ảnh bằng mô hình YO
 
 ## 🚀 Cài đặt & chạy ứng dụng
 
+
 ### ❗ Yêu cầu
 
 - Docker và Docker Compose đã cài đặt.
@@ -94,12 +95,6 @@ ultralytics
 ---
 
 ## 📸 Demo (tuỳ chọn)
-Bạn có thể thêm ảnh minh họa trước và sau khi nhận diện ở đây.
+![image](https://github.com/user-attachments/assets/d18ebb4e-703d-46cd-99ae-c3e1305b1539)
 
----
 
-## ✅ TODO Gợi ý
-- Thêm nhận diện video / webcam.
-- Tải model tự động nếu chưa có.
-- Triển khai lên server (Render, Railway, VPS...).
-- Cải thiện giao diện người dùng.
